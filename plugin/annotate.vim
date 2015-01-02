@@ -60,7 +60,7 @@ function! Annotate_foldtext()
 
   let annotations = readfile(filename)
   " Annotations file doesn't exist and it is a normal fold
-  if len(annotations) == 0 && s:annotation == ""
+  if len(annotations) == 0 && annotation == ""
     let Custom_foldtext = function(g:annotate_custom_foldtext)
     return Custom_foldtext()
   endif
