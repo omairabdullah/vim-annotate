@@ -1,0 +1,66 @@
+*annotate.txt*  Annotate code via folds
+
+       _____                        __          __
+      /  _  \   ____   ____   _____/  |______ _/  |_  ____
+     /  /_\  \ /    \ /    \ /  _ \   __\__  \\   __\/ __ \
+    /    |    \   |  \   |  (  <_> )  |  / __ \|  | \  ___/
+    \____|__  /___|  /___|  /\____/|__| (____  /__|  \___  >
+            \/     \/     \/                 \/          \/
+
+Author:  Omair Mohammed Abdullah <http://omair.in/>
+Repo:    https://github.com/omairabdullah/vim-annotate
+License: Same terms as Vim itself (see |license|)
+
+==============================================================================
+This plugin is only available if 'compatible' is not set.
+
+SUMMARY                                                             *annotate*
+
+This plugin adds the capability to fold lines with a user-specified foldtext.
+
+This plugin is useful when trying to understand code. One can fold a set of
+lines with a specific annotation which summarizes what that code is trying to
+do.
+
+==============================================================================
+USAGE                                                          *annotate-usage*
+
+The plugin exposes a single command ':Annotate' which takes a range as well as
+a single string argument.
+
+Use vim-annotate by calling the Annotate command on a visually selected range
+of text, providing the annotation string as an argument.
+
+e.g.:
+        :2,3Annotate "My annotation line"
+        :'<,'>Annotate "Annotation of visually selected text"
+
+Annotations made by the user are saved, and displayed as the foldtext for
+that fold. They can be restored in two ways:
+
+  1. If annotations are made by selecting a range of text which matches with
+     vim's default syntax-based folding, then simply set the |foldlevel| to
+     an appropriate value to restore the annotation. The |foldmethod| used
+     here is 'syntax'. Note: The range _must_ match exactly.
+
+  2. If annotations are made via 'manual' folding, then it is recommended to
+     save the vim session using ':mksession' to save the custom folds. Then the
+     session can be restored, which will bring back the user's annotations.
+     Or else the user can manually fold the same range of text again to
+     restore back the annotations.
+
+==============================================================================
+OPTIONS                                                *annotate-customization*
+
+                                             *'g:annotate_annotations_folder'*
+  Type: String, Default: '', Required
+
+  The location of the annotations files.
+
+                                             *'g:annotate_custom_foldtext'*
+  Type: String, Default: ''
+
+  If you have a custom foldtext function, give it's name here. vim-annotate
+  will use this function when it doesn't have an annotation in the foldtext.
+
+vim:tw=78:et:ft=help:norl:
