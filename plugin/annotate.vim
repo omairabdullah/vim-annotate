@@ -24,10 +24,10 @@ function! s:log(msg)
   endif
 endfunction
 
-set foldtext=Annotate_foldtext()
+set foldtext=annotate#Foldtext()
 
-command! -range -nargs=1 Annotate <line1>,<line2>call Annotate(<args>)
-function! Annotate(annotate) range
+command! -range -nargs=1 Annotate <line1>,<line2>call annotate#Annotate(<args>)
+function! annotate#Annotate(annotate) range
   let fdm_saved = &foldmethod
   let cmd = printf("%d,%dfold", a:firstline, a:lastline)
   " Hacky - use script global variable to pass annotation to foldtext function
@@ -42,7 +42,7 @@ endfunction
 "       1. load folds like in a vim session file
 "       2. editing annotation? - currently overriding old annotation
 "       3. old folds in fold file - clean up
-function! Annotate_foldtext()
+function! annotate#Foldtext()
   if v:version < 700
     return foldtext()
   endif
