@@ -13,7 +13,7 @@ if !exists("g:annotate_custom_foldtext")
 endif
 
 if !exists("g:annotate_annotations_folder")
-  echom "vim-annotate Error: please set the g:annotate_annotations_folder variable to an existing annotation folder location"
+  echomsg "vim-annotate Error: please set the g:annotate_annotations_folder variable to an existing annotation folder location"
   finish
 endif
 
@@ -24,7 +24,7 @@ let s:Custom_foldtext = function(g:annotate_custom_foldtext)
 let s:annotate_debug = 0
 function! s:log(msg)
   if s:annotate_debug == 1
-    echom a:msg
+    echomsg a:msg
   endif
 endfunction
 
@@ -35,6 +35,7 @@ command! -range -nargs=1 Annotate <line1>,<line2>call annotate#Annotate(<args>)
 function! annotate#Annotate(annotate) range
   let fdm_saved = &foldmethod
   let cmd = printf("%d,%dfold", a:firstline, a:lastline)
+  " Pass the annotation to annotate#Foldtext() using a global variable
   let s:annotation = printf("%d%s%d%s%s", a:firstline, s:separator, a:lastline, s:separator, a:annotate)
   call s:log("annotate#Annotate:[" . a:firstline . "," . a:lastline . "]: " . a:annotate)
   set foldmethod=manual
@@ -56,7 +57,6 @@ endfunction
 "       2. editing annotation? - currently overriding old annotation
 "       3. old folds in fold file - clean up
 function! annotate#Foldtext()
-
   let new_annotation = s:get_matching_annotation(s:annotation)
   if !empty(new_annotation)
     " found an annotation so clear the variable
@@ -64,22 +64,14 @@ function! annotate#Foldtext()
   endif
   call s:log("annotate#Foldtext: annotation:[" . v:foldstart . "," . v:foldend . "]: " . new_annotation)
 
-  let foldchar = matchstr(&fillchars, 'fold:\zs.')
-  let shellslash_saved = &shellslash
-  set shellslash
-  let filename = fnameescape(g:annotate_annotations_folder . "/" . fnameescape(join(split(expand("%:p"), "/"), "_")))
-  let &shellslash = shellslash_saved
-  call s:log("annotate#Foldtext: file: " . filename)
-
-  let annotations = readfile(filename)
   " Annotations file doesn't exist and need not be created
-  if len(annotations) == 0 && empty(new_annotation)
+  if len(b:annotations) == 0 && empty(new_annotation)
     call s:log("annotate#Foldtext: annotation file does not exist")
     return s:Custom_foldtext()
   endif
 
   let existing_annotation_found = 0
-  for a in annotations
+  for a in b:annotations
       let foldtext = s:get_matching_annotation(a)
       if !empty(foldtext)
         let existing_annotation_found = 1
@@ -100,12 +92,39 @@ function! annotate#Foldtext()
     call s:log("annotate#Foldtext: new annotation")
     " FIXME: replacing existing annotation is only by putting another
     " annotation _before_ this one
-    call insert(annotations, newannotation_entry, 0)
-    call writefile(annotations, filename)
+    call insert(b:annotations, newannotation_entry, 0)
     let foldtext = new_annotation
   endif
 
+  let foldchar = matchstr(&fillchars, 'fold:\zs.')
   return "+" . repeat(foldchar, 2) . repeat(" ", indent(v:foldstart) - 3) . foldtext . "    "
 endfunction
+
+function! annotate#Init()
+  let shellslash_saved = &shellslash
+  set shellslash
+  let b:annotation_file = fnameescape(g:annotate_annotations_folder . "/" . fnameescape(join(split(expand("%:p"), "/"), "_")))
+  call s:log("annotate#Foldtext: file: " . b:annotation_file)
+  let &shellslash = shellslash_saved
+  try
+    let b:annotations = readfile(b:annotation_file)
+  catch /E484:/
+    call s:log("New annotation file: " . b:annotation_file)
+    let b:annotations = {}
+  endtry
+endfunction
+
+function! annotate#Exit()
+  if len(b:annotations) != 0
+    call writefile(b:annotations, b:annotation_file)
+    call s:log("annotate#Exit: wrote annotations to file: " . b:annotation_file)
+  endif
+endfunction
+
+augroup annotate
+  autocmd!
+  autocmd BufNewFile,BufReadPost * call annotate#Init()
+  autocmd BufWinLeave,BufWritePost * call annotate#Exit()
+augroup END
 
 " vim:set sw=2 sts=2 et:
