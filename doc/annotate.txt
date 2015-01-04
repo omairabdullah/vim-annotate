@@ -14,7 +14,7 @@ License: Same terms as Vim itself (see |license|)
 ==============================================================================
 This plugin is only available if 'compatible' is not set.
 
-SUMMARY                                                             *annotate*
+SUMMARY                                                              *annotate*
 
 This plugin adds the capability to fold lines with a user-specified foldtext.
 
@@ -52,15 +52,15 @@ that fold. They can be restored in two ways:
 ==============================================================================
 OPTIONS                                                *annotate-customization*
 
-                                             *'g:annotate_annotations_folder'*
+                                              *'g:annotate_annotations_folder'*
   Type: String, Default: '', Required
 
   The location of the annotations files.
 
-                                             *'g:annotate_custom_foldtext'*
+                                                 *'g:annotate_custom_foldtext'*
   Type: String, Default: ''
 
-  If you have a custom foldtext function, give it's name here. vim-annotate
-  will use this function when it doesn't have an annotation in the foldtext.
+  If you have a custom foldtext function, give its name here. vim-annotate
+  will use this function when it doesn't have an annotation saved.
 
 vim:tw=78:et:ft=help:norl:
