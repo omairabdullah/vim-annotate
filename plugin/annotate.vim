@@ -17,6 +17,7 @@ if !exists("g:annotate_annotations_folder")
   finish
 endif
 
+let s:annotation = ""
 let s:separator = "```"
 let s:Custom_foldtext = function(g:annotate_custom_foldtext)
 
