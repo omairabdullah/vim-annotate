@@ -27,6 +27,7 @@ function! s:log(msg)
   endif
 endfunction
 
+set foldenable
 set foldtext=annotate#Foldtext()
 
 command! -range -nargs=1 Annotate <line1>,<line2>call annotate#Annotate(<args>)
