@@ -17,7 +17,7 @@ if !exists("g:annotate_annotations_folder")
   finish
 endif
 
-let s:annotate_debug = 1
+let s:annotate_debug = 0
 function! s:log(msg)
   if s:annotate_debug == 1
     echom a:msg
@@ -31,8 +31,10 @@ function! annotate#Annotate(annotate) range
   let fdm_saved = &foldmethod
   let cmd = printf("%d,%dfold", a:firstline, a:lastline)
   " Hacky - use script global variable to pass annotation to foldtext function
+  " FIXME: add check for start,end here so that other fold doesn't get
+  " replaced
   let s:annotation = a:annotate
-  call s:log("Annotate() - " . s:annotation)
+  call s:log("annotate#Annotate:[" . a:firstline . "," . a:lastline . "]: " . s:annotation)
   set foldmethod=manual
   silent execute cmd
   "let &foldmethod = fdm_saved
@@ -47,7 +49,7 @@ function! annotate#Foldtext()
     return foldtext()
   endif
 
-  call s:log("Annotation: " . s:annotation)
+  call s:log("annotate#Foldtext: annotation:[" . v:foldstart . "," . v:foldend . "]: " . s:annotation)
   let annotation = s:annotation
   let s:annotation = ""
   let separator = "```"
@@ -56,10 +58,10 @@ function! annotate#Foldtext()
   set shellslash
   let filename =  fnameescape(g:annotate_annotations_folder . "/" . fnameescape(join(split(expand("%:p"), "/"), "_")))
   let &shellslash = shellslash_saved
-  call s:log("Annotate file: " . filename)
+  call s:log("annotate#Foldtext: file: " . filename)
 
   let annotations = readfile(filename)
-  " Annotations file doesn't exist and it is a normal fold
+  " Annotations file doesn't exist and need not be created
   if len(annotations) == 0 && annotation == ""
     let Custom_foldtext = function(g:annotate_custom_foldtext)
     return Custom_foldtext()
@@ -71,6 +73,7 @@ function! annotate#Foldtext()
       if v:foldstart == annot[0] && v:foldend ==? annot[1]
         let foldtext = annot[2]
         let found = 1
+        call s:log("annotate#Foldtext: annotation found")
         break
       endif
   endfor
@@ -81,10 +84,13 @@ function! annotate#Foldtext()
       return Custom_foldtext()
     endif
     let newannotation = "" . v:foldstart . l:separator . v:foldend . l:separator . annotation
+    " FIXME: replacing existing annotation is only by putting another
+    " annotation _before_ this one
     call insert(annotations, newannotation, 0)
     call writefile(annotations, filename)
     let foldtext = annotation
   endif
+
   return "+" . repeat(foldchar, 2) . repeat(" ", indent(v:foldstart) - 3) . foldtext . "    "
 endfunction
 
